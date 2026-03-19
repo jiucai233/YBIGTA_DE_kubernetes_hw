@@ -68,8 +68,13 @@ Your Goal: Slim down the image to under 150MB and make it scale automatically.
    kubectl apply -f solution/k3d/
    ```
 4. **Validation (The OOM Experience!)**: The `deployment.yaml` starts with a memory limit of `50Mi`, which is intentionally too low. Deploy it as-is first.
-5. Check your pods (`kubectl get pods`) and events (`kubectl get events`). You should see it crash with an **`OOMKilled`** error.
-6. Now, edit your `solution/k3d/deployment.yaml`, change the memory limit to a normal value (e.g., `800Mi`), and deploy again to watch the Pod successfully reach `Running`!
+5. Immediately run `kubectl get pods -w` (the `-w` stands for watch mode). You will see the Pod crash with an **`OOMKilled`** error. **More importantly**, you will watch Kubernetes instantly try to restart it or create a new one to maintain the replica count, eventually resulting in a `CrashLoopBackOff`! *(Press `Ctrl+C` to exit watch mode).*
+6. Now, edit your `solution/k3d/deployment.yaml`, change the memory limit to a normal value (e.g., `800Mi`), and deploy again. Run `kubectl get pods -w` again to watch the Pods successfully reach a stable `Running` state! *(Press `Ctrl+C` to exit watch mode).*
+7. **The Chaos Test (Self-Healing)**: Once your pods are `Running`, copy the name of one of your pods and manually assassinate it by running:
+   ```bash
+   kubectl delete pod <pod-name>
+   ```
+8. Immediately run `kubectl get pods`. You will see Kubernetes instantly creating a *brand new pod* to replace the one you killed to maintain the requested replica count! This proves your Deployment is self-healing.
 
 #### Step 4: Load & Scale
 
@@ -87,9 +92,9 @@ Right now, your deployment configuration is hardcoded. Let's make it flexible us
 1. Fill out the `solution/k3d/configmap.yaml` file with the keys `MODEL_NAME: "qwen2-0.5b-q4.gguf"` and `CTX_SIZE: "2048"`.
 2. Update your `deployment.yaml` to read these as Environment Variables (hint: use `envFrom`).
 3. Apply the updated manifests (`kubectl apply -f solution/k3d/`).
-4. Now, let's simulate a zero-downtime upgrade! Change the `CTX_SIZE` in your `configmap.yaml` to `"4096"` and re-apply.
-5. Quickly run `kubectl get pods -w` to watch the **Rolling Update** happen (old pods terminate while new ones start).
-6. Check the logs of a new pod using `kubectl logs <pod-name>` to verify it prints the new context size!
+4. To simulate an upgrade, change the `CTX_SIZE` in your `configmap.yaml` to `"4096"` and re-apply.
+5. Quickly run `kubectl get pods -w` to watch the **Rolling Update** happen visually (old pods terminate while new ones start).
+6. Check the logs of one of your new pods using `kubectl logs <pod-name>` to verify it prints the new context size! *(Note: The final `check_hw.sh` auto-grader will automatically run a rigorous Zero-Downtime traffic test on your cluster!)*
 
 #### Step 6: Final Submission
 
@@ -104,3 +109,4 @@ Run `make report` to generate `submission_report.txt`. This script verifies your
 | **Fixing Limit to 800Mi** | Status becomes `Running (Ready 1/1)` |
 | **Running Load Test (`hey`)** | Scales up to `3 Pods (HPA Triggered)` |
 | **Updating ConfigMap** | `Terminating` old Pods, `Running` new Pods |
+| **Running `check_hw.sh`** | `ZERO_DOWNTIME_TEST: PASS (0 dropped requests)` |

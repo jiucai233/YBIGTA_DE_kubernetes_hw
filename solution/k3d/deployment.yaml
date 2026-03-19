@@ -19,7 +19,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
-          # TODO: Load environment variables from the ConfigMap 'llm-config'
+          # TODO: Load environment variables from the ConfigMap 'llm-config', this setting is for the rolling update part
           # envFrom:
           # - configMapRef:
           #     name: ...
@@ -32,12 +32,12 @@ spec:
             requests:
               cpu: "100m"
               memory: "200Mi"
-          # TODO: Mount the hostPath volume containing the model weights here!
+          # TODO: Mount the hostPath volume containing the model weights here! store it inside the k3d server
           volumeMounts:
           # - name: ...
           #   mountPath: ...
 
-      # TODO: Define the hostPath volume here
+      # TODO: Define the hostPath volume here, this allows the container has the access to the model weight path inside the k3d server
       volumes:
       # - name: ...
       #   hostPath:

@@ -6,7 +6,7 @@ set -e
 
 cd "$(dirname "$0")"
 
-MODEL_URL="https://huggingface.co/Qwen/Qwen1.5-0.5B-Chat-GGUF/resolve/main/qwen1_5-0_5b-chat-q4_0.gguf"
+MODEL_URL="https://huggingface.co/Qwen/Qwen2-0.5B-Instruct-GGUF/resolve/main/qwen2-0_5b-instruct-q4_0.gguf"
 FILE_NAME="mock_model.gguf"
 
 if [ ! -f "$FILE_NAME" ]; then

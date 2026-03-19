@@ -1,9 +1,20 @@
-# [STUDENT TASK]
-# Write a multi-stage Dockerfile here to build a lightweight image.
-# Requirements:
-# 1. Base image should be small (e.g. debian:slim, python:3.X-slim)
-# 2. DO NOT COPY the model weights into this image.
-# 3. Use multi-stage builds to compile/install dependencies without including build tools in the final image.
+# ==========================================
+# The Great Slim-Down Challenge
+# Your Goal: Build an image < 150MB
+# ==========================================
 
-FROM scratch
-# ... your code here ...
+# Stage 1: The Builder
+# Hint: Start with a slim python image (e.g., python:3.12-slim) as 'builder'
+# Hint: Can you use a tool like 'uv' or 'venv' to install dependencies efficiently?
+# Hint: Do you really need to install `build-essential` or `cmake` here?
+
+# [YOUR BUILDER STAGE CODE HERE...]
+
+
+# Stage 2: The Runtime (Light)
+# Hint: Start fresh with another ultra-slim python image
+# Hint: Copy ONLY what is strictly necessary from the builder stage
+# Hint: Copy the `server.py` file from the baseline/ directory into your container
+# Hint: Ensure your ENTRYPOINT runs the server on port 8080!
+
+# [YOUR RUNTIME STAGE CODE HERE...]

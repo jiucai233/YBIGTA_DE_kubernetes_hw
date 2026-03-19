@@ -1,6 +1,7 @@
 import time
 import os
 import sys
+import torch  # This massive library import alone takes ~150MB of RAM. Instantly triggers the 50Mi OOM Trap!
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)

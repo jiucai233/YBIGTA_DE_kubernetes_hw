@@ -16,7 +16,7 @@ mkdir -p "$(pwd)/model_data"
 # 2. Host volume mapped to /model_data on all nodes for the mock physical volume
 # 3. Port mapping 8080:80 to expose Ingress on localhost:8080
 k3d cluster create llm-cluster \
-  --registry-create llm-registry:0.0.0.0:5000 \
+  --registry-create llm-registry:0.0.0.0:5050 \
   --volume "$(pwd)/model_data:/model_data@all" \
   --port "8080:80@loadbalancer" \
   --servers 1

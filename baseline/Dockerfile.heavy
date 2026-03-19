@@ -1,15 +1,23 @@
-FROM ubuntu:latest
+FROM ubuntu:24.04
 
-# Simulate bloat
+# Simulate bloat but maintain modern availability standards
 RUN apt-get update && \
-    apt-get install -y build-essential cmake git curl wget python3 python3-pip && \
+    apt-get install -y build-essential cmake git curl wget python3 python3-venv && \
     rm -rf /var/lib/apt/lists/*
+
+# Install uv (lightning fast package manager)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR /app
 
-# Install dependencies (heavy)
-# We install torch etc to easily breach the 800Mi threshold and add gigabytes to the image
-RUN pip3 install --no-cache-dir flask gunicorn torch torchvision transformers accelerate numpy
+# Setup isolated virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install heavy dependencies via uv
+RUN uv pip install flask gunicorn torch torchvision transformers accelerate numpy
 
 # Copy the pre-downloaded model directly into the image (Bad practice for size and layers!)
 # If the file doesn't exist, we will create a dummy file during build

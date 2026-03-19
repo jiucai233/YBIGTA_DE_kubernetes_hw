@@ -14,7 +14,7 @@ echo "2/3: Installing k3d..."
 curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
 echo "3/3: Installing hey..."
-sudo wget https://hey-release.s3.us-east-2.amazonaws.com/hey_linux_amd64 -O /usr/local/bin/hey
+sudo curl -L -o /usr/local/bin/hey https://hey-release.s3.us-east-2.amazonaws.com/hey_linux_amd64
 sudo chmod +x /usr/local/bin/hey
 
 echo "========================================"

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-config
+data:
+  # TODO: Set MODEL_NAME to "qwen2-0.5b-q4.gguf" and CTX_SIZE to "2048"
+  MODEL_NAME: #TODO
+  CTX_SIZE: #TODO

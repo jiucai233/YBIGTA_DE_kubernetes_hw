@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: llm-server
+  template:
+    metadata:
+      labels:
+        app: llm-server
+    spec:
+      containers:
+        - name: llm-slim
+          # TODO: Update with your slim image tag (e.g. localhost:5000/llm-slim:latest)
+          image: #TODO <YOUR_IMAGE_HERE>
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          # TODO: Load environment variables from the ConfigMap 'llm-config'
+          # envFrom:
+          # - configMapRef:
+          #     name: ...
+
+          resources:
+            # TODO: This limit is intentionally too low to trigger an OOMKilled error!
+            # After observing the crash, change this to a normal limit (e.g., "800Mi")
+            limits:
+              memory: "50Mi"
+            requests:
+              cpu: "100m"
+              memory: "200Mi"
+          # TODO: Mount the hostPath volume containing the model weights here!
+          volumeMounts:
+          # - name: ...
+          #   mountPath: ...
+
+      # TODO: Define the hostPath volume here
+      volumes:
+      # - name: ...
+      #   hostPath:
+      #     path: /model_data

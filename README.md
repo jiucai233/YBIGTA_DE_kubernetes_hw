@@ -1,124 +1,124 @@
-## HW: Optimizing LLM Workloads for k3d
+## HW: k3d를 위한 LLM 워크로드 최적화 (Optimizing LLM Workloads for k3d)
 
-#### 📋 Prerequisites & Installation Guide
+#### 📋 사전 준비 사항 & 설치 가이드
 
-This homework supports Mac, Linux, and Windows. Please follow the instructions for your specific operating system to install the required tools (`Docker`, `kubectl`, `k3d`, `hey`, and standard utilities like `make`).
+이 과제는 Mac, Linux, Windows를 지원합니다. 운영 체제에 맞는 안내에 따라 필요한 도구들(`Docker`, `kubectl`, `k3d`, `hey` 및 `make` 등 기본 유틸리티)을 설치해 주세요.
 
-**🍎 1. macOS Instructions**
+**🍎 1. macOS 설치 안내**
 
-- **Docker**: Install [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/).
-- **Terminal Tools**: We have provided an automated script for all required CLI tools. Run:
+- **Docker**: [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)을 설치합니다.
+- **터미널 도구**: 필요한 모든 CLI 도구를 설치하는 자동화 스크립트를 제공합니다. 다음을 실행하세요:
   ```bash
   bash setup/install_mac.sh
   ```
 
-**🐧 2. Linux Instructions (and Windows WSL2)**
+**🐧 2. Linux 설치 안내 (및 Windows WSL2)**
 
 - **Docker**: `curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh`
-- **Terminal Tools**: We have provided an automated script for kubectl, k3d, and hey. Run:
+- **터미널 도구**: kubectl, k3d, hey를 설치하는 자동화 스크립트를 제공합니다. 다음을 실행하세요:
   ```bash
   bash setup/install_linux_wsl.sh
   ```
 
-**🪟 3. Windows Instructions**
+**🪟 3. Windows 설치 안내**
 
-> **💡 STRONGLY RECOMMENDED:** It is highly advised to use **[WSL2 (Ubuntu)](https://learn.microsoft.com/en-us/windows/wsl/install)** for this assignment and follow the Linux instructions above. Windows native environments often struggle with bash scripts (`.sh`) and path formatting. However, native instructions are provided below if you prefer.
+> **💡 강력 권장 사항:** 이 과제에서는 **[WSL2 (Ubuntu)](https://learn.microsoft.com/en-us/windows/wsl/install)**를 사용하고 위의 Linux 설치 안내를 따르는 것을 강력히 권장합니다. Windows 기본 환경은 종종 bash 스크립트(`.sh`) 및 경로 포맷 문제로 인해 원활하게 작동하지 않습니다. 그러나 Windows 기본 환경을 선호하는 경우 아래의 지침을 참조하세요.
 
-- **Docker**: Install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/).
-- **Terminal Tools**: You can install them manually via Winget:
+- **Docker**: [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)를 설치합니다.
+- **터미널 도구**: Winget을 통해 수동으로 설치할 수 있습니다:
   - `winget install -e --id Kubernetes.kubectl`
-  - `winget install k3d` (or `choco install k3d`)
-  - Download the [hey Windows executable](https://hey-release.s3.us-east-2.amazonaws.com/hey_windows_amd64.exe) and add it to your System PATH.
+  - `winget install k3d` (또는 `choco install k3d`)
+  - [hey Windows 실행 파일](https://hey-release.s3.us-east-2.amazonaws.com/hey_windows_amd64.exe)을 다운로드하고 시스템 PATH에 추가합니다.
 
 ---
 
-#### The Scenario
+#### 시나리오
 
-You are a DevOps Engineer at an AI startup. A researcher gave you a "Dockerized" LLM server (`Dockerfile.heavy`), but it is 3GB, takes minutes to deploy, and crashes instantly when put into your k3d cluster due to memory limits.
+당신은 AI 스타트업의 DevOps 엔지니어입니다. 연구원으로부터 "도커화된(Dockerized)" LLM 서버(`Dockerfile.heavy`)를 전달받았지만, 크기가 3GB에 달하고 배포에 수 분이 걸리며, k3d 클러스터에 배포 시 메모리 제한으로 인해 즉시 다운됩니다.
 
-Your Goal: Slim down the image to under 150MB and make it scale automatically.
+**여러분의 목표**: 이미지 크기를 150MB 미만으로 줄이고 자동으로 스케일링이 가능하도록 만드는 것입니다.
 
-#### ⚠️ Ground Rules
+#### ⚠️ 기본 규칙 (Ground Rules)
 
-- **DO NOT** modify anything inside the `baseline/` or `scripts/` directories. These contain the grading logic and the starting scenario.
-- You should **only** write code and configuration inside the `solution/` directory.
-- Run docker before you start to do this homework.
+- `baseline/` 또는 `scripts/` 디렉터리 내부를 **절대 수정하지 마세요**. 채점 로직과 초기 시나리오가 포함되어 있습니다.
+- 코드를 작성하거나 설정을 변경할 때는 **오직** `solution/` 디렉터리 내부에서만 작업해야 합니다.
+- 이 과제를 시작하기 전에 반드시 docker를 실행하세요.
 
-#### Step 1: Analyze the Bloat
+#### 1단계: 불필요한 크기 분석 (Analyze the Bloat)
 
-1. First, download the mock model weights:
+1. 먼저, 모의 모델 가중치(weights)를 다운로드합니다:
    ```bash
    bash baseline/model_downloader.sh
    ```
-2. Build the baseline image:
+2. 베이스라인 이미지를 빌드합니다:
    ```bash
    docker build -t llm-heavy -f baseline/Dockerfile.heavy baseline/
    ```
-3. Run `docker history llm-heavy`.
-4. Identify: Where is the space going? (Hint: Check build tools and model weights).
+3. `docker history llm-heavy` 명령어를 실행합니다.
+4. 분석하기: 어디에서 용량을 가장 많이 차지하고 있나요? (힌트: 빌드 도구와 모델 가중치를 확인하세요).
 
-#### Step 2: The Optimization Challenge
+#### 2단계: 최적화 과제 (The Optimization Challenge)
 
-1. Check `Dockerfile.slim` in the `/solution` folder.
-2. Must use Multi-stage builds.
-3. Must use a slim base image (e.g., `debian:slim` or `python:3.10-slim`).
-4. **Must NOT COPY** the model weights into the image. Use a hostPath volume in k3d instead.
+1. `/solution` 폴더 내에 있는 `Dockerfile.slim`을 확인하세요.
+2. 반드시 Multi-stage 빌드를 사용해야 합니다.
+3. 반드시 슬림 베이스 이미지(예: `debian:slim` 또는 `python:3.10-slim`)를 사용해야 합니다.
+4. 모델 가중치를 이미지 안으로 **복사(COPY)하면 안 됩니다**. 대신 k3d의 hostPath 볼륨을 사용하세요.
 
-#### Step 3: k3d Deployment
+#### 3단계: k3d 배포 (k3d Deployment)
 
-1. Initialize the cluster: `bash scripts/k3d_setup.sh`.
-2. Build and push your slim image to the local registry:
+1. 클러스터 초기화: `bash scripts/k3d_setup.sh` 실행.
+2. 슬림 이미지를 빌드하고 로컬 레지스트리로 푸시합니다:
    ```bash
    docker build -t localhost:5050/llm-slim:latest -f solution/Dockerfile.slim .
    docker push localhost:5050/llm-slim:latest
    ```
-   _(Note: While you push to `localhost:5050` from your pc, your Kubernetes nodes run in their own virtual network and must pull the image using its internal name: `llm-registry:5000/llm-slim:latest`! Use this in your deployment.yaml)._
-3. Complete the manifests in `solution/k3d/` and deploy them:
+   _(참고: pc에서 `localhost:5050`으로 푸시하지만, 쿠버네티스 노드들은 자신들만의 가상 네트워크에서 실행되므로 내부 이름인 `llm-registry:5000/llm-slim:latest`를 사용하여 이미지를 가져와야 합니다! deployment.yaml 파일에 이를 사용하세요)._
+3. `solution/k3d/` 경로의 매니페스트 파일들을 완성하고 배포합니다:
    ```bash
    kubectl apply -f solution/k3d/
    ```
-4. **Validation (The OOM Experience!)**: The `deployment.yaml` starts with a memory limit of `50Mi`, which is intentionally too low. Deploy it as-is first.
-5. Immediately run `kubectl get pods -w` (the `-w` stands for watch mode). You will see the Pod crash with an **`OOMKilled`** error. **More importantly**, you will watch Kubernetes instantly try to restart it or create a new one to maintain the replica count, eventually resulting in a `CrashLoopBackOff`! _(Press `Ctrl+C` to exit watch mode)._
-6. Now, edit your `solution/k3d/deployment.yaml`, change the memory limit to a normal value (e.g., `800Mi`), and deploy again. Run `kubectl get pods -w` again to watch the Pods successfully reach a stable `Running` state! _(Press `Ctrl+C` to exit watch mode)._
-7. **The Chaos Test (Self-Healing)**: Once your pods are `Running`, copy the name of one of your pods and manually assassinate it by running:
+4. **검증 (OOM 경험하기!)**: `deployment.yaml`은 시작 시 메모리 제한이 의도적으로 매우 낮은 `50Mi`로 설정되어 있습니다. 먼저 그대로 배포해 보세요.
+5. 즉시 `kubectl get pods -w` 명령어를 실행합니다(`-w`는 watch 모드). 파드가 **`OOMKilled`** 에러와 함께 다운되는 것을 볼 수 있습니다. **더 중요한 것은**, 복제본(replica) 개수를 유지하기 위해 쿠버네티스가 즉시 재시작을 시도하거나 새 파드를 생성하려고 하며, 결국 `CrashLoopBackOff` 상태가 되는 과정을 지켜볼 수 있다는 것입니다! _(`Ctrl+C`를 눌러 watch 모드를 종료하세요)._
+6. 이제 `solution/k3d/deployment.yaml`을 수정하여 메모리 제한을 정상적인 값(예: `800Mi`)으로 변경하고 다시 배포합니다. `kubectl get pods -w`를 다시 실행하여 파드들이 성공적으로 안정적인 `Running` 상태에 도달하는 것을 확인하세요! _(`Ctrl+C`를 눌러 watch 모드를 종료하세요)._
+7. **카오스 테스트 (Self-Healing)**: 파드들이 `Running` 상태가 되면, 정상적으로 실행 중인 파드 이름 중 하나를 복사하여 다음 명령어를 통해 수동으로 강제 종료해 봅니다:
    ```bash
-   kubectl delete pod <pod-name>
+   kubectl delete pod <파드-이름>
    ```
-8. Immediately run `kubectl get pods`. You will see Kubernetes instantly creating a _brand new pod_ to replace the one you killed to maintain the requested replica count! This proves your Deployment is self-healing.
+8. 즉시 `kubectl get pods`를 실행합니다. 요청된 복제본 개수를 유지하기 위해 쿠버네티스가 여러분이 종료한 파드를 대체할 _완전히 새로운 파드_를 즉시 생성하는 것을 볼 수 있습니다! 이것은 여러분의 Deployment가 스스로 복구(self-healing)할 수 있음을 증명합니다.
 
-#### Step 4: Load & Scale
+#### 4단계: 부하 테스트 & 스케일링 (Load & Scale)
 
-Generate traffic to trigger the HPA:
+트래픽을 발생시켜 HPA를 작동시킵니다:
 
 ```bash
 hey -z 60s -c 10 -m POST -H "Content-Type: application/json" -d '{"prompt":"hello"}' http://localhost:8080/completion
 ```
 
-Wait a minute and watch your cluster grow from 1 Pod to 3 Pods in real-time.
+1분 정도 기다리면서, 클러스터 규모가 1개의 파드에서 3개의 파드로 실시간으로 늘어나는 것을 확인하세요.
 
-#### Step 5: The Rolling Update (Zero Downtime)
+#### 5단계: 무중단 롤링 업데이트 (The Rolling Update)
 
-Right now, your deployment configuration is hardcoded. Let's make it flexible using a ConfigMap.
+현재 배포 구성은 하드코딩되어 있습니다. ConfigMap을 사용하여 유연하게 변경해 봅시다.
 
-1. Fill out the `solution/k3d/configmap.yaml` file with the keys `MODEL_NAME: "qwen2-0.5b-q4.gguf"` and `CTX_SIZE: "2048"`.
-2. Update your `deployment.yaml` to read these as Environment Variables (hint: use `envFrom`).
-3. Apply the updated manifests (`kubectl apply -f solution/k3d/`).
-4. To simulate an upgrade, change the `CTX_SIZE` in your `configmap.yaml` to `"4096"` and re-apply.
-5. Quickly run `kubectl get pods -w` to watch the **Rolling Update** happen visually (old pods terminate while new ones start).
-6. Check the logs of one of your new pods using `kubectl logs <pod-name>` to verify it prints the new context size! _(Note: The final `check_hw.sh` auto-grader will automatically run a rigorous Zero-Downtime traffic test on your cluster!)_
+1. `solution/k3d/configmap.yaml` 파일에 `MODEL_NAME: "qwen2-0.5b-q4.gguf"` 및 `CTX_SIZE: "2048"` 키 값을 채워 넣습니다.
+2. 해당 값들을 환경 변수로 읽어오도록 `deployment.yaml`을 업데이트하세요 (힌트: `envFrom` 사용).
+3. 업데이트된 매니페스트를 적용합니다 (`kubectl apply -f solution/k3d/`).
+4. 업그레이드를 시뮬레이션하기 위해, `configmap.yaml`의 `CTX_SIZE` 값을 `"4096"`으로 변경하고 다시 적용(`re-apply`)해 보세요.
+5. 즉시 `kubectl get pods -w`를 실행하여 기존 파드가 종료되고 새로운 파드가 시작되는 **롤링 업데이트(Rolling Update)**가 수행되는 모습을 시각적으로 확인해 보세요.
+6. `kubectl logs <파드-이름>` 명령어로 새 파드 중 하나의 로그를 확인하여 변경된 컨텍스트 크기가 출력되는지 검증하세요! _(참고: 최종 `check_hw.sh` 자동 채점 스크립트는 클러스터에 대해 엄격한 무중단(Zero-Downtime) 트래픽 테스트를 자동으로 실행합니다!)_
 
-#### Step 6: Final Submission
+#### 6단계: 최종 제출 (Final Submission)
 
-Run `bash scripts/check_hw.sh` to generate `submission_report.txt`. This script verifies your image size, layer count, and cluster stability. Ensure your results match the requirements before submitting.
+`bash scripts/check_hw.sh`를 실행하여 `submission_report.txt`를 생성합니다. 이 스크립트는 이미지 크기, 레이어 수 및 클러스터 안정성을 검증합니다. 제출하기 전에 결과가 요구 사항과 일치하는지 확인하세요.
 
 ---
 
-### 🌟 Verification Check-list
+### 🌟 검증 체크리스트 (Verification Check-list)
 
-| Action Taken                  | Expected Result (Pod Status / Events)           |
-| ----------------------------- | ----------------------------------------------- |
-| **Deploying with 50Mi Limit** | Crashes with `OOMKilled`                        |
-| **Fixing Limit to 800Mi**     | Status becomes `Running (Ready 1/1)`            |
-| **Running Load Test (`hey`)** | Scales up to `3 Pods (HPA Triggered)`           |
-| **Updating ConfigMap**        | `Terminating` old Pods, `Running` new Pods      |
-| **Running `check_hw.sh`**     | `ZERO_DOWNTIME_TEST: PASS (0 dropped requests)` |
+| 수행 항목 (Action Taken)            | 예상 결과 (Expected Result - Pod Status / Events) |
+| ----------------------------------- | ----------------------------------------------- |
+| **50Mi 제한으로 배포**              | `OOMKilled` 로 다운됨                           |
+| **제한을 800Mi로 수정**             | 상태가 `Running (Ready 1/1)` 로 변경됨          |
+| **부하 테스트 실행 (`hey`)**        | `3개의 파드로 스케일업 (HPA 작동)`                |
+| **ConfigMap 업데이트**              | 기존 파드 `Terminating`, 새 파드 `Running`      |
+| **`check_hw.sh` 실행**              | `ZERO_DOWNTIME_TEST: PASS (0 dropped requests)` |

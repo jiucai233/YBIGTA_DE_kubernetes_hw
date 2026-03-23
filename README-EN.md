@@ -7,9 +7,9 @@ This homework supports Mac, Linux, and Windows. Please follow the instructions f
 **🍎 1. macOS Instructions**
 
 - **Docker**: Install [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/).
-- **Terminal Tools**: We have provided an automated script for all required CLI tools. Run:
+- **Terminal Tools**: We have provided an automated script for all required CLI tools. Python is required (pre-installed on Mac). Run:
   ```bash
-  bash setup/install_mac.sh
+  python3 setup/install.py
   ```
 
 **🐧 2. Linux Instructions (and Windows WSL2)**
@@ -17,7 +17,7 @@ This homework supports Mac, Linux, and Windows. Please follow the instructions f
 - **Docker**: `curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh`
 - **Terminal Tools**: We have provided an automated script for kubectl, k3d, and hey. Run:
   ```bash
-  bash setup/install_linux_wsl.sh
+  python3 setup/install.py
   ```
 
 **🪟 3. Windows Instructions**
@@ -25,7 +25,11 @@ This homework supports Mac, Linux, and Windows. Please follow the instructions f
 > **💡 STRONGLY RECOMMENDED:** It is highly advised to use **[WSL2 (Ubuntu)](https://learn.microsoft.com/en-us/windows/wsl/install)** for this assignment and follow the Linux instructions above. Windows native environments often struggle with bash scripts (`.sh`) and path formatting. However, native instructions are provided below if you prefer.
 
 - **Docker**: Install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/).
-- **Terminal Tools**: You can install them manually via Winget:
+- **Terminal Tools**: If you have Python installed, you can install the CLI tools automatically:
+  ```powershell
+  python setup/install.py
+  ```
+  Otherwise, you can install them manually via Winget:
   - `winget install -e --id Kubernetes.kubectl`
   - `winget install k3d` (or `choco install k3d`)
   - Download the [hey Windows executable](https://hey-release.s3.us-east-2.amazonaws.com/hey_windows_amd64.exe) and add it to your System PATH.
@@ -48,7 +52,7 @@ Your Goal: Slim down the image to under 150MB and make it scale automatically.
 
 1. First, download the mock model weights:
    ```bash
-   bash baseline/model_downloader.sh
+   python3 baseline/model_downloader.py
    ```
 2. Build the baseline image:
    ```bash
@@ -66,7 +70,7 @@ Your Goal: Slim down the image to under 150MB and make it scale automatically.
 
 #### Step 3: k3d Deployment
 
-1. Initialize the cluster: `bash scripts/k3d_setup.sh`.
+1. Initialize the cluster: `python3 scripts/k3d_setup.py`.
 2. Build and push your slim image to the local registry:
    ```bash
    docker build -t localhost:5050/llm-slim:latest -f solution/Dockerfile.slim .
@@ -109,7 +113,7 @@ Right now, your deployment configuration is hardcoded. Let's make it flexible us
 
 #### Step 6: Final Submission
 
-Run `bash scripts/check_hw.sh` to generate `submission_report.txt`. This script verifies your image size, layer count, and cluster stability. Ensure your results match the requirements before submitting.
+Run `python3 scripts/check_hw.py` to generate `submission_report.txt`. This script verifies your image size, layer count, and cluster stability. Ensure your results match the requirements before submitting.
 
 ---
 

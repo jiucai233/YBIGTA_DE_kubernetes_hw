@@ -7,17 +7,17 @@
 **🍎 1. macOS 설치 안내**
 
 - **Docker**: [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)을 설치합니다.
-- **터미널 도구**: 필요한 모든 CLI 도구를 설치하는 자동화 스크립트를 제공합니다. 다음을 실행하세요:
+- **터미널 도구**: 필요한 모든 CLI 도구를 설치하는 통합 자동화 스크립트를 제공합니다. 파이썬이 설치되어 있어야 합니다 (Mac은 기본 설치됨). 다음을 실행하세요:
   ```bash
-  bash setup/install_mac.sh
+  python3 setup/install.py
   ```
 
 **🐧 2. Linux 설치 안내 (및 Windows WSL2)**
 
 - **Docker**: `curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh`
-- **터미널 도구**: kubectl, k3d, hey를 설치하는 자동화 스크립트를 제공합니다. 다음을 실행하세요:
+- **터미널 도구**: 필요한 모든 CLI 도구를 설치하는 통합 자동화 스크립트를 제공합니다. 다음을 실행하세요:
   ```bash
-  bash setup/install_linux_wsl.sh
+  python3 setup/install.py
   ```
 
 **🪟 3. Windows 설치 안내**
@@ -25,7 +25,11 @@
 > **💡 강력 권장 사항:** 이 과제에서는 **[WSL2 (Ubuntu)](https://learn.microsoft.com/en-us/windows/wsl/install)**를 사용하고 위의 Linux 설치 안내를 따르는 것을 강력히 권장합니다. Windows 기본 환경은 종종 bash 스크립트(`.sh`) 및 경로 포맷 문제로 인해 원활하게 작동하지 않습니다. 그러나 Windows 기본 환경을 선호하는 경우 아래의 지침을 참조하세요.
 
 - **Docker**: [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)를 설치합니다.
-- **터미널 도구**: Winget을 통해 수동으로 설치할 수 있습니다:
+- **터미널 도구**: 파이썬(`python`)이 설치되어 있다면 다음 스크립트로 CLI 도구(kubectl, k3d, hey)를 자동 설치할 수 있습니다:
+  ```powershell
+  python setup/install.py
+  ```
+  파이썬이 없다면 직접 Winget을 통해 수동으로 설치할 수 있습니다:
   - `winget install -e --id Kubernetes.kubectl`
   - `winget install k3d` (또는 `choco install k3d`)
   - [hey Windows 실행 파일](https://hey-release.s3.us-east-2.amazonaws.com/hey_windows_amd64.exe)을 다운로드하고 시스템 PATH에 추가합니다.
@@ -48,7 +52,7 @@
 
    ```bash
    # 실습용 가중치 파일 생성
-   bash baseline/model_downloader.sh
+   python3 baseline/model_downloader.py
    ```
 
 2. **베이스라인(Heavy) 이미지 빌드**
@@ -73,7 +77,7 @@
 
    ```bash
    # 클러스터 생성
-   bash scripts/k3d_setup.sh
+   python3 scripts/k3d_setup.py
 
    # 슬림 이미지 빌드 및 로컬 레지스트리 푸시
    docker build -t localhost:5050/llm-slim:latest -f solution/Dockerfile.slim .
@@ -109,7 +113,7 @@
 1. **자동 채점 스크립트 실행**
 
    ```bash
-   bash scripts/check_hw.sh
+   python3 scripts/check_hw.py
    ```
 
    `submission_report.txt`가 생성되었는지 확인하세요.

@@ -67,6 +67,8 @@ rm -f /tmp/hw_zd_fails.log
 
 # GENERATE REPORT
 {
+  echo "PC_NAME: $(hostname)"
+  echo "OS_INFO: $(uname -srm)"
   echo "IMAGE_SIZE_MB: $SIZE_MB"
   echo "LAYER_COUNT: $LAYER_COUNT"
   echo "K3D_READY_PODS: $POD_STATUS"

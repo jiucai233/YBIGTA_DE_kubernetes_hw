@@ -2,7 +2,10 @@
 
 #### 📋 Prerequisites & Installation Guide
 
-This homework supports Mac, Linux, and Windows. Please follow the instructions for your specific operating system to install the required tools (`Docker`, `kubectl`, `k3d`, `hey`, and standard utilities like `make`).
+> **💡 STRONGLY RECOMMENDED (GitHub Codespaces):** 
+> We highly recommend using **GitHub Codespaces** for this homework! Simply click the `<> Code` button on the repository, navigate to the `Codespaces` tab, and create a new one. A fully configured cloud environment (with Docker, K3d, etc., pre-installed) will open right in your browser. Just run the commands detailed below in the terminal and enjoy the homework!
+
+This homework also supports local Mac, Linux, and Windows. If running locally, please follow the instructions below to install the required tools.
 
 **🍎 1. macOS Instructions**
 

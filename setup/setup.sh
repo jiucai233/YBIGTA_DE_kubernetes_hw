@@ -17,6 +17,25 @@ echo "========================================"
 echo "Installing dependencies for $OS ($ARCH)..."
 echo "========================================"
 
+if ! command -v docker &> /dev/null; then
+    echo "Docker not found. Installing Docker..."
+    if [ "$OS" = "Darwin" ]; then
+        if ! command -v brew &> /dev/null; then
+            echo "Error: Homebrew not installed. Visit https://brew.sh/"
+            exit 1
+        fi
+        brew install --cask docker
+        open /Applications/Docker.app
+        echo "Please finish the Docker Desktop setup in the GUI window."
+    elif [ "$OS" = "Linux" ]; then
+        curl -fsSL https://get.docker.com | sudo sh
+        sudo usermod -aG docker $USER
+        echo "Docker Engine installed. You might need to restart your terminal session."
+    fi
+else
+    echo "Docker is already installed."
+fi
+
 if [ "$OS" = "Darwin" ]; then
     if ! command -v brew &> /dev/null; then
         echo "Error: Homebrew not installed. Visit https://brew.sh/"

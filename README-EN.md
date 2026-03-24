@@ -36,7 +36,7 @@ This homework supports Mac, Linux, and Windows. Please follow the instructions f
 
 You are a DevOps Engineer at an AI startup. A researcher gave you a "Dockerized" LLM server (`Dockerfile.heavy`), but it is 3GB, takes minutes to deploy, and crashes instantly when put into your k3d cluster due to memory limits.
 
-Your Goal: Slim down the image to under 150MB and make it scale automatically.
+Your Goal: Slim down the image to under 1GB and make it scale automatically.
 
 #### ⚠️ Ground Rules
 
@@ -56,6 +56,10 @@ Your Goal: Slim down the image to under 150MB and make it scale automatically.
    ```
 3. Run `docker history llm-heavy`.
 4. Identify: Where is the space going? (Hint: Check build tools and model weights).
+5. **Clean up**: After analyzing, delete the heavy image to free up ~3GB of disk space:
+   ```bash
+   docker rmi llm-heavy
+   ```
 
 #### Step 2: The Optimization Challenge
 
@@ -77,7 +81,7 @@ Your Goal: Slim down the image to under 150MB and make it scale automatically.
    ```bash
    kubectl apply -f solution/k3d/
    ```
-4. **Validation (The OOM Experience!)**: The `deployment.yaml` starts with a memory limit of `50Mi`, which is intentionally too low. Deploy it as-is first.
+4. **Validation (The OOM Experience!)**: The `deployment.yaml` starts with a memory limit of `10Mi`, which is intentionally too low. Deploy it as-is first.
 5. Immediately run `kubectl get pods -w` (the `-w` stands for watch mode). You will see the Pod crash with an **`OOMKilled`** error. **More importantly**, you will watch Kubernetes instantly try to restart it or create a new one to maintain the replica count, eventually resulting in a `CrashLoopBackOff`! _(Press `Ctrl+C` to exit watch mode)._
 6. Now, edit your `solution/k3d/deployment.yaml`, change the memory limit to a normal value (e.g., `800Mi`), and deploy again. Run `kubectl get pods -w` again to watch the Pods successfully reach a stable `Running` state! _(Press `Ctrl+C` to exit watch mode)._
 7. **The Chaos Test (Self-Healing)**: Once your pods are `Running`, copy the name of one of your pods and manually assassinate it by running:
@@ -117,7 +121,7 @@ Run `bash scripts/check_hw.sh` to generate `submission_report.txt`. This script 
 
 | Action Taken                  | Expected Result (Pod Status / Events)           |
 | ----------------------------- | ----------------------------------------------- |
-| **Deploying with 50Mi Limit** | Crashes with `OOMKilled`                        |
+| **Deploying with 10Mi Limit** | Crashes with `OOMKilled`                        |
 | **Fixing Limit to 800Mi**     | Status becomes `Running (Ready 1/1)`            |
 | **Running Load Test (`hey`)** | Scales up to `3 Pods (HPA Triggered)`           |
 | **Updating ConfigMap**        | `Terminating` old Pods, `Running` new Pods      |

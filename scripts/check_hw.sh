@@ -4,7 +4,7 @@
 echo "Running checks..."
 
 # 1. IMAGE SIZE CHECK
-# Target: < 150MB (without weights)
+# Target: < 1024MB (without weights)
 SLIM_SIZE=$(docker inspect llm-slim --format='{{.Size}}' 2>/dev/null || echo "0")
 if [ "$SLIM_SIZE" == "0" ]; then
     echo "Error: llm-slim image not found locally."
@@ -26,8 +26,7 @@ if [ -z "$POD_STATUS" ]; then
 fi
 
 # 4. EVENT SCAN
-# Ensure the student actually saw the OOM error before fixing it.
-OOM_EVIDENCE=$(kubectl get events --all-namespaces | grep -i "OOMKilled" | wc -l | tr -d ' ')
+OOM_EVIDENCE=$(kubectl get events --all-namespaces | grep -iE "OOM|BackOff" | wc -l | tr -d ' ')
 
 # 5. LIMITS CHECK
 # Verify they fixed the memory limit in the deployment

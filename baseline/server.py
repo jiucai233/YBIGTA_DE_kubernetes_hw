@@ -1,8 +1,11 @@
 import time
 import os
 import sys
-import torch  # This massive library import alone takes ~150MB of RAM. Instantly triggers the 50Mi OOM Trap!
 from flask import Flask, request, jsonify
+
+# Trigger the 50Mi OOM Trap on startup to simulate a heavy model loading!
+# This takes ~150MB of RAM, causing a CrashLoopBackOff until the memory limit is raised.
+bloat = [' ' * 1024 * 1024 for _ in range(150)]
 
 app = Flask(__name__)
 

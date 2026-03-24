@@ -34,7 +34,7 @@
 
 #### 시나리오
 
-본 실습에서는 3GB에 달하는 거대한 LLM 이미지를 150MB 미만으로 경량화하고, k3d(Kubernetes) 환경에서 자동 스케일링(HPA) 및 무중단 업데이트를 구현하는 서버리스급 인프라를 구축해봅시다!
+본 실습에서는 3GB에 달하는 거대한 LLM 이미지를 1GB 미만으로 경량화하고, k3d(Kubernetes) 환경에서 자동 스케일링(HPA) 및 무중단 업데이트를 구현하는 서버리스급 인프라를 구축해봅시다!
 
 #### ⚠️ 기본 규칙 (Ground Rules)
 
@@ -61,6 +61,12 @@
    `docker history llm-heavy` 명령어를 통해 어떤 레이어에서 용량을 가장 많이 차지하는지 확인합니다.
    - **분석 포인트**: 빌드 도구 포함 여부와 이미지 내부에 복사된 모델 가중치(weights)의 크기를 체크하세요.
 
+4. **공간 확보 (삭제)**
+   원인 분석이 끝났다면, 디스크 용량 확보를 위해 무거운 이미지를 삭제하세요:
+   ```bash
+   docker rmi llm-heavy
+   ```
+
 #### PHASE 2: Multi-stage 빌드를 통한 최적화
 
 `solution/Dockerfile.slim` 파일을 작성하여 이미지 크기를 줄입니다.
@@ -84,7 +90,7 @@
 
 2. **인프라 적용 및 OOM(Out Of Memory) 확인**
    - `solution/k3d/` 내 매니페스트를 적용합니다. (`kubectl apply -f solution/k3d/`)
-   - `kubectl get pods -w`로 관찰 시, 메모리 제한(`50Mi`)으로 인해 파드가 `OOMKilled` 및 `CrashLoopBackOff` 상태가 되는 것을 확인합니다.
+   - `kubectl get pods -w`로 관찰 시, 메모리 제한(`10Mi`)으로 인해 파드가 `OOMKilled` 및 `CrashLoopBackOff` 상태가 되는 것을 확인합니다.
 
 3. **리소스 수정 및 Self-Healing 검증**
    - `deployment.yaml`의 메모리 제한을 `800Mi`로 상향 조정한 후 다시 배포합니다.
@@ -124,7 +130,7 @@
 
 | 수행 항목 (Action Taken)     | 예상 결과 (Expected Result - Pod Status / Events) |
 | ---------------------------- | ------------------------------------------------- |
-| **50Mi 제한으로 배포**       | `OOMKilled` 로 다운됨                             |
+| **10Mi 제한으로 배포**       | `OOMKilled` 로 다운됨                             |
 | **제한을 800Mi로 수정**      | 상태가 `Running (Ready 1/1)` 로 변경됨            |
 | **부하 테스트 실행 (`hey`)** | `3개의 파드로 스케일업 (HPA 작동)`                |
 | **ConfigMap 업데이트**       | 기존 파드 `Terminating`, 새 파드 `Running`        |

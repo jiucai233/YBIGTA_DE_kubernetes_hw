@@ -128,4 +128,4 @@ Run `bash scripts/check_hw.sh` to generate `submission_report.txt`. This script 
 | **Fixing Limit to 800Mi**     | Status becomes `Running (Ready 1/1)`            |
 | **Running Load Test (`hey`)** | Scales up to `3 Pods (HPA Triggered)`           |
 | **Updating ConfigMap**        | `Terminating` old Pods, `Running` new Pods      |
-| **Running `check_hw.sh`**     | `ZERO_DOWNTIME_TEST: PASS (0 dropped requests)` |
+| **Running `check_hw.sh`**     | `ZERO_DOWNTIME_TEST: PASS` (Note: A Drop Rate of **< 5%** is safely tolerated and considered a PASS due to local Docker Traefik ingress latency limitations.) |

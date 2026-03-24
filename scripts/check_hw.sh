@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # check_hw.sh - Auto-Grader Logic
 
 echo "Running checks..."

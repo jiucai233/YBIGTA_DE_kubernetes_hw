@@ -1,0 +1,4 @@
+# Force all scripts to convert to LF during checkout
+*.sh text eol=lf
+*.yaml text eol=lf
+*Dockerfile* text eol=lf

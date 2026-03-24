@@ -7,17 +7,17 @@
 **🍎 1. macOS 설치 안내**
 
 - **Docker**: [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)을 설치합니다.
-- **터미널 도구**: 필요한 모든 CLI 도구를 설치하는 자동화 스크립트를 제공합니다. 다음을 실행하세요:
+- **터미널 도구**: 필요한 모든 CLI 도구를 설치하는 통합 자동화 스크립트를 제공합니다. 다음을 실행하세요:
   ```bash
-  bash setup/install_mac.sh
+  bash setup/setup.sh
   ```
 
 **🐧 2. Linux 설치 안내 (및 Windows WSL2)**
 
 - **Docker**: `curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh`
-- **터미널 도구**: kubectl, k3d, hey를 설치하는 자동화 스크립트를 제공합니다. 다음을 실행하세요:
+- **터미널 도구**: kubectl, k3d, hey를 단번에 설치하는 통합 자동화 스크립트를 제공합니다. 다음을 실행하세요:
   ```bash
-  bash setup/install_linux_wsl.sh
+  bash setup/setup.sh
   ```
 
 **🪟 3. Windows 설치 안내**

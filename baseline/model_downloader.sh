@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Fetch Qwen2-0.5B-GGUF for the baseline image.
 # We will download it directly to the baseline directory to be COPY'd by Dockerfile.heavy.
 

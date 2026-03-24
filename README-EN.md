@@ -7,17 +7,17 @@ This homework supports Mac, Linux, and Windows. Please follow the instructions f
 **🍎 1. macOS Instructions**
 
 - **Docker**: Install [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/).
-- **Terminal Tools**: We have provided an automated script for all required CLI tools. Run:
+- **Terminal Tools**: We have provided a unified automated script for all required CLI tools. Run:
   ```bash
-  bash setup/install_mac.sh
+  bash setup/setup.sh
   ```
 
 **🐧 2. Linux Instructions (and Windows WSL2)**
 
 - **Docker**: `curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh`
-- **Terminal Tools**: We have provided an automated script for kubectl, k3d, and hey. Run:
+- **Terminal Tools**: We have provided a unified automated script for kubectl, k3d, and hey. Run:
   ```bash
-  bash setup/install_linux_wsl.sh
+  bash setup/setup.sh
   ```
 
 **🪟 3. Windows Instructions**

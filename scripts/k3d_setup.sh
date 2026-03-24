@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Initialize k3d cluster for "The Great Slim-Down" HW
 
 set -e
@@ -15,9 +15,10 @@ mkdir -p "$(pwd)/model_data"
 # 1. Local registry
 # 2. Host volume mapped to /model_data on all nodes for the mock physical volume
 # 3. Port mapping 8080:80 to expose Ingress on localhost:8080
+CUR_DIR="${PWD}"
 k3d cluster create llm-cluster \
   --registry-create llm-registry:0.0.0.0:5050 \
-  --volume "$(pwd)/model_data:/model_data@all" \
+  --volume "${CUR_DIR}/model_data:/model_data@all" \
   --port "8080:80@loadbalancer" \
   --servers 1
 
